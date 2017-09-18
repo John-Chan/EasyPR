@@ -5,8 +5,10 @@ project(easypr)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-if (CMAKE_SYSTEM_NAME MATCHES "Darwin")
-    set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} "/usr/local/opt/opencv-3.2.0")
+if (DEFINED ENV{OPENCV_INSTALL_DIR})
+    # The directory which contains OpenCVConfig.cmake,OpenCVConfig-version.cmake
+    set(OpenCV_DIR $ENV{OPENCV_INSTALL_DIR})
+    message(STATUS "Looking for OpenCV in:${OPENCV_INSTALL_DIR}")
 endif ()
 
 # OpenVC3 required
@@ -16,6 +18,16 @@ find_package(OpenCV 3.2.0 REQUIRED)
 include_directories(.)
 include_directories(include)
 include_directories(${OpenCV_INCLUDE_DIRS})
+
+if (OpenCV_VERSION_MAJOR STREQUAL "3" AND OpenCV_VERSION_MINOR STREQUAL "2")
+    message(STATUS "apply 3.2 api calls")
+	add_definitions(-DCV_VERSION_THREE_TWO)
+endif ()
+
+if (CMAKE_SYSTEM_NAME MATCHES "Windows")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd\"4819\"")
+    #set_target_properties(${EXECUTABLE_NAME} PROPERTIES LINK_FLAGS "/ignore:4819")
+endif ()
 
 # sub directories
 add_subdirectory(thirdparty)
@@ -50,6 +62,8 @@ add_library(easypr STATIC ${SOURCE_FILES})
 if (CMAKE_SYSTEM_NAME MATCHES "Darwin")
     set(EXECUTABLE_NAME "demo")
 elseif (CMAKE_SYSTEM_NAME MATCHES "Linux")
+    set(EXECUTABLE_NAME "demo")
+elseif (CMAKE_SYSTEM_NAME MATCHES "Windows")
     set(EXECUTABLE_NAME "demo")
 endif ()
 
